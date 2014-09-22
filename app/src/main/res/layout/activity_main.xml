@@ -14,10 +14,27 @@
         android:layout_height="wrap_content"
         android:text="take a photo"/>
 
-    <ImageView
-        android:id="@+id/ivCaptured"
-        android:layout_below="@id/btnCamera"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnCamera" >
+
+        <ImageView
+            android:id="@+id/ivCaptured"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true" />
+
+        <TextView
+            android:id="@+id/tvLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:background="#88FFFFFF"
+            android:layout_marginTop="20dp"
+            android:layout_centerHorizontal="true" />
+
+    </RelativeLayout>
 
 </RelativeLayout>
