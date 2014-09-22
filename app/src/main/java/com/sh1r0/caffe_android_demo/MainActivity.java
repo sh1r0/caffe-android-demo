@@ -1,8 +1,10 @@
 package com.sh1r0.caffe_android_demo;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -31,13 +33,17 @@ import java.util.Scanner;
 public class MainActivity extends Activity implements CNNListener {
     private static final String LOG_TAG = "MainActivity";
     private static final int REQUEST_IMAGE_CAPTURE = 100;
+    private static final int REQUEST_IMAGE_SELECT = 200;
     public static final int MEDIA_TYPE_IMAGE = 1;
     private static String[] IMAGENET_CLASSES;
 
-    private Uri fileUri;
     private Button btnCamera;
+    private Button btnSelect;
     private ImageView ivCaptured;
     private TextView tvLabel;
+    private Uri fileUri;
+    private ProgressDialog dialog;
+    private Bitmap bmp;
 
     static {
         System.loadLibrary("caffe");
@@ -55,14 +61,25 @@ public class MainActivity extends Activity implements CNNListener {
         btnCamera = (Button) findViewById(R.id.btnCamera);
         btnCamera.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                btnCamera.setEnabled(false);
-                tvLabel.setText("");
+                initPrediction();
                 fileUri = getOutputMediaFileUri(MEDIA_TYPE_IMAGE);
-                Intent intentCamera = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intentCamera.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                startActivityForResult(intentCamera, REQUEST_IMAGE_CAPTURE);
+                Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                i.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+                startActivityForResult(i, REQUEST_IMAGE_CAPTURE);
             }
         });
+
+        btnSelect = (Button) findViewById(R.id.btnSelect);
+        btnSelect.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                initPrediction();
+                Intent i = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(i, REQUEST_IMAGE_SELECT);
+            }
+        });
+
+        // TODO: implement a splash screen(?
+        initTest();
 
         AssetManager am = this.getAssets();
         try {
@@ -81,19 +98,42 @@ public class MainActivity extends Activity implements CNNListener {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bitmap bmp = BitmapFactory.decodeFile(fileUri.getPath());
-            Log.d(LOG_TAG, fileUri.getPath());
+        if ((requestCode == REQUEST_IMAGE_CAPTURE || requestCode == REQUEST_IMAGE_SELECT) && resultCode == RESULT_OK) {
+            String imgPath;
+
+            if (requestCode == REQUEST_IMAGE_CAPTURE) {
+                imgPath = fileUri.getPath();
+            } else {
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+                Cursor cursor = MainActivity.this.getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                imgPath = cursor.getString(columnIndex);
+                cursor.close();
+            }
+
+            bmp = BitmapFactory.decodeFile(imgPath);
+            Log.d(LOG_TAG, imgPath);
             Log.d(LOG_TAG, String.valueOf(bmp.getHeight()));
             Log.d(LOG_TAG, String.valueOf(bmp.getWidth()));
-            ivCaptured.setImageBitmap(bmp);
+
+            dialog = ProgressDialog.show(MainActivity.this, "Predicting...", "Wait for one sec...", true);
+
             CNNTask cnnTask = new CNNTask(MainActivity.this);
-            cnnTask.execute(fileUri.getPath());
+            cnnTask.execute(imgPath);
         } else {
             btnCamera.setEnabled(true);
+            btnSelect.setEnabled(true);
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void initPrediction() {
+        btnCamera.setEnabled(false);
+        btnSelect.setEnabled(false);
+        tvLabel.setText("");
     }
 
     private native int initTest();
@@ -108,7 +148,6 @@ public class MainActivity extends Activity implements CNNListener {
 
         @Override
         protected Integer doInBackground(String... strings) {
-            initTest();
             return runTest(strings[0]);
         }
 
@@ -121,9 +160,15 @@ public class MainActivity extends Activity implements CNNListener {
 
     @Override
     public void onTaskCompleted(int result) {
+        ivCaptured.setImageBitmap(bmp);
         tvLabel.setText(IMAGENET_CLASSES[result]);
         Log.d(LOG_TAG, "done !!");
         btnCamera.setEnabled(true);
+        btnSelect.setEnabled(true);
+
+        if (dialog != null) {
+            dialog.dismiss();
+        }
     }
 
     /** Create a file Uri for saving an image or video */
