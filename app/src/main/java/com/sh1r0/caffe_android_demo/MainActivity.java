@@ -44,6 +44,7 @@ public class MainActivity extends Activity implements CNNListener {
     private Uri fileUri;
     private ProgressDialog dialog;
     private Bitmap bmp;
+    private ImageNet imageNet;
 
     static {
         System.loadLibrary("caffe");
@@ -79,7 +80,8 @@ public class MainActivity extends Activity implements CNNListener {
         });
 
         // TODO: implement a splash screen(?
-        initTest();
+        imageNet = new ImageNet();
+        imageNet.initTest();
 
         AssetManager am = this.getAssets();
         try {
@@ -136,9 +138,6 @@ public class MainActivity extends Activity implements CNNListener {
         tvLabel.setText("");
     }
 
-    private native int initTest();
-    private native int runTest(String imgPath);
-
     private class CNNTask extends AsyncTask<String, Void, Integer> {
         private CNNListener listener;
 
@@ -148,7 +147,7 @@ public class MainActivity extends Activity implements CNNListener {
 
         @Override
         protected Integer doInBackground(String... strings) {
-            return runTest(strings[0]);
+            return imageNet.runTest(strings[0]);
         }
 
         @Override
@@ -182,7 +181,7 @@ public class MainActivity extends Activity implements CNNListener {
         // using Environment.getExternalStorageState() before doing this.
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+                Environment.DIRECTORY_PICTURES), "Caffe-Android-Demo");
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
