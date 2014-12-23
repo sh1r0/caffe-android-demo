@@ -81,7 +81,8 @@ public class MainActivity extends Activity implements CNNListener {
 
         // TODO: implement a splash screen(?
         imageNet = new ImageNet();
-        imageNet.initTest();
+        imageNet.initTest("/sdcard/caffe_mobile/bvlc_reference_caffenet/deploy_mobile.prototxt",
+                "/sdcard/caffe_mobile/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel");
 
         AssetManager am = this.getAssets();
         try {
