@@ -44,11 +44,11 @@ public class MainActivity extends Activity implements CNNListener {
     private Uri fileUri;
     private ProgressDialog dialog;
     private Bitmap bmp;
-    private ImageNet imageNet;
+    private CaffeMobile caffeMobile;
 
     static {
         System.loadLibrary("caffe");
-        System.loadLibrary("mira-cnn");
+        System.loadLibrary("caffe_jni");
     }
 
     @Override
@@ -80,8 +80,8 @@ public class MainActivity extends Activity implements CNNListener {
         });
 
         // TODO: implement a splash screen(?
-        imageNet = new ImageNet();
-        imageNet.initTest("/sdcard/caffe_mobile/bvlc_reference_caffenet/deploy_mobile.prototxt",
+        caffeMobile = new CaffeMobile();
+        caffeMobile.loadModel("/sdcard/caffe_mobile/bvlc_reference_caffenet/deploy_mobile.prototxt",
                 "/sdcard/caffe_mobile/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel");
 
         AssetManager am = this.getAssets();
@@ -148,7 +148,7 @@ public class MainActivity extends Activity implements CNNListener {
 
         @Override
         protected Integer doInBackground(String... strings) {
-            return imageNet.runTest(strings[0]);
+            return caffeMobile.predictImage(strings[0]);
         }
 
         @Override
