@@ -81,6 +81,7 @@ public class MainActivity extends Activity implements CNNListener {
 
         // TODO: implement a splash screen(?
         caffeMobile = new CaffeMobile();
+        caffeMobile.enableLog(true);
         caffeMobile.loadModel("/sdcard/caffe_mobile/bvlc_reference_caffenet/deploy_mobile.prototxt",
                 "/sdcard/caffe_mobile/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel");
 
