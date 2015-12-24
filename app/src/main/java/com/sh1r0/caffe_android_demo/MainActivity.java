@@ -20,6 +20,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.sh1r0.caffe_android_lib.CaffeMobile;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,9 +83,11 @@ public class MainActivity extends Activity implements CNNListener {
 
         // TODO: implement a splash screen(?
         caffeMobile = new CaffeMobile();
-        caffeMobile.enableLog(true);
-        caffeMobile.loadModel("/sdcard/caffe_mobile/bvlc_reference_caffenet/deploy_mobile.prototxt",
+        caffeMobile.loadModel("/sdcard/caffe_mobile/bvlc_reference_caffenet/deploy.prototxt",
                 "/sdcard/caffe_mobile/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel");
+
+        float[] meanValues = {104, 117, 123};
+        caffeMobile.setMean(meanValues);
 
         AssetManager am = this.getAssets();
         try {
@@ -109,7 +113,7 @@ public class MainActivity extends Activity implements CNNListener {
                 imgPath = fileUri.getPath();
             } else {
                 Uri selectedImage = data.getData();
-                String[] filePathColumn = { MediaStore.Images.Media.DATA };
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
                 Cursor cursor = MainActivity.this.getContentResolver().query(selectedImage, filePathColumn, null, null, null);
                 cursor.moveToFirst();
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
@@ -149,7 +153,7 @@ public class MainActivity extends Activity implements CNNListener {
 
         @Override
         protected Integer doInBackground(String... strings) {
-            return caffeMobile.predictImage(strings[0]);
+            return caffeMobile.predictImage(strings[0])[0];
         }
 
         @Override
@@ -172,13 +176,17 @@ public class MainActivity extends Activity implements CNNListener {
         }
     }
 
-    /** Create a file Uri for saving an image or video */
-    private static Uri getOutputMediaFileUri(int type){
+    /**
+     * Create a file Uri for saving an image or video
+     */
+    private static Uri getOutputMediaFileUri(int type) {
         return Uri.fromFile(getOutputMediaFile(type));
     }
 
-    /** Create a File for saving an image or video */
-    private static File getOutputMediaFile(int type){
+    /**
+     * Create a File for saving an image or video
+     */
+    private static File getOutputMediaFile(int type) {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
@@ -188,8 +196,8 @@ public class MainActivity extends Activity implements CNNListener {
         // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()) {
-            if (! mediaStorageDir.mkdirs()) {
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
                 Log.d("MyCameraApp", "failed to create directory");
                 return null;
             }
@@ -200,7 +208,7 @@ public class MainActivity extends Activity implements CNNListener {
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
+                    "IMG_" + timeStamp + ".jpg");
         } else {
             return null;
         }
