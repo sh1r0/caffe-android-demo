@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -83,6 +84,7 @@ public class MainActivity extends Activity implements CNNListener {
 
         // TODO: implement a splash screen(?
         caffeMobile = new CaffeMobile();
+        caffeMobile.setNumThreads(4);
         caffeMobile.loadModel("/sdcard/caffe_mobile/bvlc_reference_caffenet/deploy.prototxt",
                 "/sdcard/caffe_mobile/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel");
 
@@ -146,6 +148,7 @@ public class MainActivity extends Activity implements CNNListener {
 
     private class CNNTask extends AsyncTask<String, Void, Integer> {
         private CNNListener listener;
+        private long startTime;
 
         public CNNTask(CNNListener listener) {
             this.listener = listener;
@@ -153,11 +156,13 @@ public class MainActivity extends Activity implements CNNListener {
 
         @Override
         protected Integer doInBackground(String... strings) {
+            startTime = SystemClock.uptimeMillis();
             return caffeMobile.predictImage(strings[0])[0];
         }
 
         @Override
         protected void onPostExecute(Integer integer) {
+            Log.i(LOG_TAG, String.format("elapsed wall time: %d ms", SystemClock.uptimeMillis() - startTime));
             listener.onTaskCompleted(integer);
             super.onPostExecute(integer);
         }
@@ -167,7 +172,6 @@ public class MainActivity extends Activity implements CNNListener {
     public void onTaskCompleted(int result) {
         ivCaptured.setImageBitmap(bmp);
         tvLabel.setText(IMAGENET_CLASSES[result]);
-        Log.d(LOG_TAG, "done !!");
         btnCamera.setEnabled(true);
         btnSelect.setEnabled(true);
 

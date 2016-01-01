@@ -4,6 +4,8 @@ package com.sh1r0.caffe_android_lib;
  * Created by shiro on 3/26/15.
  */
 public class CaffeMobile {
+    public  native void setNumThreads(int numThreads);
+
     public native void enableLog(boolean enabled);  // currently nonfunctional
 
     public native int loadModel(String modelPath, String weightsPath);  // required
