@@ -16,6 +16,8 @@ public class CaffeMobile {
 
     public native void setScale(float scale);
 
+    public native float[] getConfidenceScore(String imgPath);
+
     public native int[] predictImage(String imgPath, int k);
 
     public native float[][] extractFeatures(String imgPath, String blobNames);
