@@ -48,6 +48,10 @@ public class MainActivity extends Activity implements CNNListener {
     private ProgressDialog dialog;
     private Bitmap bmp;
     private CaffeMobile caffeMobile;
+    File sdcard = Environment.getExternalStorageDirectory();
+    String modelDir = sdcard.getAbsolutePath() + "/caffe_mobile/bvlc_reference_caffenet";
+    String modelProto = modelDir + "/deploy.prototxt";
+    String modelBinary = modelDir + "/bvlc_reference_caffenet.caffemodel";
 
     static {
         System.loadLibrary("caffe");
@@ -85,8 +89,7 @@ public class MainActivity extends Activity implements CNNListener {
         // TODO: implement a splash screen(?
         caffeMobile = new CaffeMobile();
         caffeMobile.setNumThreads(4);
-        caffeMobile.loadModel("/sdcard/caffe_mobile/bvlc_reference_caffenet/deploy.prototxt",
-                "/sdcard/caffe_mobile/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel");
+        caffeMobile.loadModel(modelProto, modelBinary);
 
         float[] meanValues = {104, 117, 123};
         caffeMobile.setMean(meanValues);
