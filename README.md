@@ -17,3 +17,4 @@ cd caffe
 adb shell mkdir -p /sdcard/caffe_mobile/
 adb push models/bvlc_reference_caffenet/ /sdcard/caffe_mobile/bvlc_reference_caffenet/
 ```
+If the app crashes, first make sure it is not an out of memory issue - modify deploy.prototxt such that the mini batch size is 1 instead of 10
