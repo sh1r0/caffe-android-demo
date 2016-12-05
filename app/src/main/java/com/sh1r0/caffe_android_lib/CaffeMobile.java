@@ -1,10 +1,13 @@
 package com.sh1r0.caffe_android_lib;
 
-/**
- * Created by shiro on 3/26/15.
- */
+import java.nio.charset.StandardCharsets;
+
 public class CaffeMobile {
-    public  native void setNumThreads(int numThreads);
+    private static byte[] stringToBytes(String s) {
+        return s.getBytes(StandardCharsets.US_ASCII);
+    }
+
+    public native void setNumThreads(int numThreads);
 
     public native void enableLog(boolean enabled);  // currently nonfunctional
 
@@ -16,11 +19,27 @@ public class CaffeMobile {
 
     public native void setScale(float scale);
 
-    public native float[] getConfidenceScore(String imgPath);
+    public native float[] getConfidenceScore(byte[] data, int width, int height);
 
-    public native int[] predictImage(String imgPath, int k);
+    public float[] getConfidenceScore(String imgPath) {
+        return getConfidenceScore(stringToBytes(imgPath), 0, 0);
+    }
 
-    public native float[][] extractFeatures(String imgPath, String blobNames);
+    public native int[] predictImage(byte[] data, int width, int height, int k);
+
+    public int[] predictImage(String imgPath, int k) {
+        return predictImage(stringToBytes(imgPath), 0, 0, k);
+    }
+
+    public int[] predictImage(String imgPath) {
+        return predictImage(imgPath, 1);
+    }
+
+    public native float[][] extractFeatures(byte[] data, int width, int height, String blobNames);
+
+    public float[][] extractFeatures(String imgPath, String blobNames) {
+        return extractFeatures(stringToBytes(imgPath), 0, 0, blobNames);
+    }
 
     public void setMean(float[] meanValues) {
         setMeanWithMeanValues(meanValues);
@@ -29,9 +48,4 @@ public class CaffeMobile {
     public void setMean(String meanFile) {
         setMeanWithMeanFile(meanFile);
     }
-
-    public int[] predictImage(String imgPath) {
-        return predictImage(imgPath, 1);
-    }
-
 }
